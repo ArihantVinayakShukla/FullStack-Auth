@@ -43,12 +43,14 @@ export const signIn = async (req, res, next) => {
       return res.status(401).json({ msg: "Wrong credentials" });
     }
 
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "90d",
-    });
+    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET);
     const { password: hashedPassword, ...rest } = user._doc;
     res
-      .cookie("access_token", token, { httpOnly: true })
+      .cookie("access_token", token, {
+        httpOnly: true,
+        path: "/",
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+      })
       .status(200)
       .json({ user: rest });
   } catch (error) {
