@@ -1,7 +1,7 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 
-export const signUp = async (req, res) => {
+export const signUp = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
