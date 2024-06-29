@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import OAuth from "../components/OAuth";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -27,10 +28,10 @@ const SignIn = () => {
       );
       const data = res.data; // Simplified
       setLoading(false);
-      if(data.success === false){
+      if (data.success === false) {
         setError(true);
       }
-      navigate('/')
+      navigate("/");
     } catch (error) {
       console.error("There was an error submitting the form:", error);
       setLoading(false);
@@ -59,12 +60,13 @@ const SignIn = () => {
           onChange={handleChange}
         />
         <button
-        disabled={loading}
+          disabled={loading}
           type="submit"
           className="bg-slate-600 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-75"
         >
-          {loading ? "loading..." : "sign in" }
+          {loading ? "loading..." : "sign in"}
         </button>
+        <OAuth />
       </form>
       <div className="flex gap-3 mt-5">
         <p>Dont have an account?</p>
@@ -72,7 +74,7 @@ const SignIn = () => {
           <span className="text-blue-500">Sign up</span>
         </Link>
       </div>
-        <p className="text-red-700 mt5">{error && 'Something went wrong' }</p>
+      <p className="text-red-700 mt5">{error && "Something went wrong"}</p>
     </div>
   );
 };
