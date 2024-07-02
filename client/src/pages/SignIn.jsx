@@ -2,15 +2,19 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import OAuth from "../components/OAuth";
+import { useRecoilValue } from "recoil";
+import { userStateSelector } from "../store/selectors";
+import { useSignInActions } from "../store/hooks";
 
-const SignIn = () => {
+const Signin = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
+  const { loading, error } = useRecoilValue(userStateSelector);
+  console.log(loading, error);
+  const { signInStart, signInSuccess, signInFailure } = useSignInActions();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -20,22 +24,22 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setLoading(true);
-      setError(false);
+      signInStart();
       const res = await axios.post(
         "http://localhost:3000/api/auth/signin",
-        formData
+        formData,
+        { withCredentials: true }
       );
-      const data = res.data; // Simplified
-      setLoading(false);
+      const data = res.data;
       if (data.success === false) {
-        setError(true);
+        signInFailure("Sign in failed");
+      } else {
+        signInSuccess(data);
+        navigate("/");
       }
-      navigate("/");
     } catch (error) {
       console.error("There was an error submitting the form:", error);
-      setLoading(false);
-      setError(true);
+      signInFailure(error.message || "Something went wrong!");
     }
   };
 
@@ -74,9 +78,11 @@ const SignIn = () => {
           <span className="text-blue-500">Sign up</span>
         </Link>
       </div>
-      <p className="text-red-700 mt5">{error && "Something went wrong"}</p>
+      <p className="text-red-700 mt5">
+        {error ? error.message || "Something went wrong" : ""}
+      </p>
     </div>
   );
 };
 
-export default SignIn;
+export default Signin;
