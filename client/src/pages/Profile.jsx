@@ -2,6 +2,7 @@ import { useRecoilValue } from "recoil";
 import { userStateSelector } from "../store/selectors";
 import { useSignInActions } from "../store/hooks";
 import { useEffect, useRef, useState } from "react";
+import {useNavigate} from "react-router-dom";
 import {
   getDownloadURL,
   getStorage,
@@ -12,10 +13,17 @@ import { app } from "../firebase";
 import axios from "axios";
 
 const Profile = () => {
+  const navigate = useNavigate();
   const { user, loading, error } = useRecoilValue(userStateSelector);
-  const { updateUserStart, updateUserSuccess, updateUserFailure } =
-    useSignInActions();
-    const currentUser = user?.user || user;
+  const {
+    updateUserStart,
+    updateUserSuccess,
+    updateUserFailure,
+    deleteUserFailure,
+    deleteUserStart,
+    deleteUserSuccess,
+  } = useSignInActions();
+  const currentUser = user?.user || user;
 
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
@@ -77,7 +85,23 @@ const Profile = () => {
       updateUserFailure("Failed to update user");
     }
   };
-  
+
+  const handleDeleteAccount = async () => {
+    try {
+      deleteUserStart();
+      const res = await axios.delete(`http://localhost:3000/api/user/delete/${currentUser._id}`, {withCredentials: true});
+      const data = res.data;
+      if(data.success === false) {
+        deleteUserFailure("Failed to delete user");
+        return;
+      } else {
+        deleteUserSuccess(data);
+        navigate("/sign-in");
+      }
+    } catch (error) {
+      deleteUserFailure("Failed to delete user");
+    }
+  };
 
   return (
     <div className="p-3 max-w-lg mx-auto">
@@ -134,15 +158,22 @@ const Profile = () => {
           onChange={handleChange}
         />
         <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-         {loading ? "loading..." : "update"}
+          {loading ? "loading..." : "update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-500 cursor-pointer">Sign out</span>
-        <span className="text-red-500 cursor-pointer">Delete account</span>
+        <span
+          onClick={handleDeleteAccount}
+          className="text-red-500 cursor-pointer"
+        >
+          Delete Account
+        </span>
+        <span className="text-red-500 cursor-pointer">Sign Out</span>
       </div>
-          <p className="text-red-700 mt-5">{error && 'Something went wrong'}</p>
-          <p className="text-green-500 mt-5">{updateSuccess && 'User is updated successfully'}</p>
+      <p className="text-red-700 mt-5">{error && "Something went wrong"}</p>
+      <p className="text-green-500 mt-5">
+        {updateSuccess && "User is updated successfully"}
+      </p>
     </div>
   );
 };

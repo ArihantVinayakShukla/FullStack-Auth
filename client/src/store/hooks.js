@@ -27,6 +27,16 @@ const useSignInActions = () => {
       setLoading(false);
       setError(errorMessage);
     },
+    deleteUserStart: () => setLoading(true),
+    deleteUserSuccess: () => {
+      setUser(null);
+      setLoading(false);
+      setError(false);
+    },
+    deleteUserFailure: (errorMessage) => {
+      setLoading(false);
+      setError(errorMessage);
+    },
   };
 };
 
