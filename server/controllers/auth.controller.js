@@ -5,8 +5,8 @@ import jwt from "jsonwebtoken";
 export const signUp = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
-    
-    console.log("inside the signUp method")
+
+    console.log("inside the signUp method");
     if (user) {
       return res.status(400).json({ msg: "User already exists" });
     }
@@ -74,8 +74,8 @@ export const googleAuth = async (req, res, next) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      if (user.authMethod === 'local') {
-        user.authMethod = 'google';
+      if (user.authMethod === "local") {
+        user.authMethod = "google";
         user.picture = picture;
         await user.save();
       }
@@ -85,7 +85,7 @@ export const googleAuth = async (req, res, next) => {
         username: name,
         email,
         picture,
-        authMethod: 'google',
+        authMethod: "google",
       });
       await user.save();
     }
@@ -98,9 +98,28 @@ export const googleAuth = async (req, res, next) => {
         expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
       })
       .status(200)
-      .json({ user: { _id: user._id, username: user.username, email: user.email, picture: user.picture } });
+      .json({
+        user: {
+          _id: user._id,
+          username: user.username,
+          email: user.email,
+          picture: user.picture,
+        },
+      });
   } catch (error) {
     console.error("Google Auth Error:", error);
-    res.status(500).json({ message: "Error during Google authentication", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error during Google authentication",
+        error: error.message,
+      });
   }
+};
+
+export const signOut = (req, res) => {
+  res
+    .clearCookie("access_token", { path: "/" })
+    .status(200)
+    .json({ msg: "Logged out successfully" });
 };

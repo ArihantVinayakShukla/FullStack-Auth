@@ -37,6 +37,12 @@ const useSignInActions = () => {
       setLoading(false);
       setError(errorMessage);
     },
+    signOut: () => {
+      setUser(null);
+      setError(false);
+      setLoading(false);
+    }
+
   };
 };
 
