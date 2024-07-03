@@ -75,7 +75,6 @@ export const googleAuth = async (req, res, next) => {
 
     if (user) {
       if (user.authMethod === 'local') {
-        // Update the user to use Google auth
         user.authMethod = 'google';
         user.picture = picture;
         await user.save();

@@ -2,8 +2,10 @@ import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
 import { app } from "../firebase";
 import axios from "axios";
 import { useSignInActions } from "../store/hooks.js";
+import { useNavigate } from 'react-router-dom';
 
 const OAuth = () => {
+  const navigate = useNavigate();
   const { signInSuccess } = useSignInActions();
 
   const handleGoogleClick = async () => {
@@ -22,7 +24,7 @@ const OAuth = () => {
         { withCredentials: true }
       );
       signInSuccess(res.data);
-      console.log("Login successful", res.data);
+      navigate("/");
     } catch (error) {
       console.log(
         "Could not login with Google",

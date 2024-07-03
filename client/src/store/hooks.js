@@ -6,7 +6,6 @@ const useSignInActions = () => {
   const setLoading = useSetRecoilState(loadingAtom);
   const setError = useSetRecoilState(errorAtom);
 
-  
   return {
     signInStart: () => setLoading(true),
     signInSuccess: (userData) => {
@@ -15,6 +14,16 @@ const useSignInActions = () => {
       setError(null);
     },
     signInFailure: (errorMessage) => {
+      setLoading(false);
+      setError(errorMessage);
+    },
+    updateUserStart: () => setLoading(true),
+    updateUserSuccess: (userData) => {
+      setUser(userData);
+      setLoading(false);
+      setError(false);
+    },
+    updateUserFailure: (errorMessage) => {
       setLoading(false);
       setError(errorMessage);
     },

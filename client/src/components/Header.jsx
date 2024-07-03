@@ -4,7 +4,17 @@ import { userStateSelector } from "../store/selectors";
 
 const Header = () => {
   const { user } = useRecoilValue(userStateSelector);
-  const currentUser = user?.user;
+  console.log(user);
+
+  // Helper function to get the correct picture URL
+  const getPictureUrl = (user) => {
+    if (user && user.picture) {
+      return user.picture;
+    } else if (user && user.user && user.user.picture) {
+      return user.user.picture;
+    }
+    return null; // or a default image URL
+  };
 
   return (
     <div className="bg-slate-200">
@@ -21,7 +31,11 @@ const Header = () => {
           </Link>
           <Link to="/profile">
             {user ? (
-              <img src={currentUser.picture} alt="_profilePic" className="h-7 w-7 rounded-full object-cover"/>
+              <img 
+                src={getPictureUrl(user)} 
+                alt="_profilePic" 
+                className="h-7 w-7 rounded-full object-cover"
+              />
             ) : (
               <li>Sign In</li>
             )}

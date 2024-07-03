@@ -1,5 +1,6 @@
 import { useRecoilValue } from "recoil";
 import { userStateSelector } from "../store/selectors";
+import { useSignInActions } from "../store/hooks";
 import { useEffect, useRef, useState } from "react";
 import {
   getDownloadURL,
@@ -8,16 +9,20 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
+import axios from "axios";
 
 const Profile = () => {
-  const { user } = useRecoilValue(userStateSelector);
-  const currentUser = user?.user;
+  const { user, loading, error } = useRecoilValue(userStateSelector);
+  const { updateUserStart, updateUserSuccess, updateUserFailure } =
+    useSignInActions();
+    const currentUser = user?.user || user;
 
   const fileRef = useRef(null);
   const [image, setImage] = useState(undefined);
   const [imagePercent, setImagePercent] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [formData, setFormData] = useState({});
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   useEffect(() => {
     if (image) {
@@ -41,16 +46,43 @@ const Profile = () => {
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) =>
-          setFormData({ ...formData, profilePicture: downloadURL })
+          setFormData({ ...formData, picture: downloadURL })
         );
       }
     );
   };
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    updateUserStart();
+    try {
+      const res = await axios.post(
+        `http://localhost:3000/api/user/update/${currentUser._id}`,
+        formData,
+        { withCredentials: true }
+      );
+      const data = res.data;
+      console.log(data);
+      if (data.success === false) {
+        updateUserFailure("Failed to update user");
+      } else {
+        updateUserSuccess(data);
+        setUpdateSuccess(true);
+      }
+    } catch (error) {
+      updateUserFailure("Failed to update user");
+    }
+  };
+  
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
-      <form className="flex flex-col gap-5">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         <input
           type="file"
           ref={fileRef}
@@ -59,19 +91,23 @@ const Profile = () => {
           onChange={(e) => setImage(e.target.files[0])}
         />
         <img
-          src={formData.profilePicture || currentUser.picture}
+          src={formData.picture || currentUser.picture}
           alt="_profilePic"
           className="h-24 w-24 self-center cursor-pointer rounded-full object-cover mt-2"
           onClick={() => fileRef.current.click()}
         />
         <p className=" text-sm self-center">
           {imageError ? (
-            <span className="text-red-700">Failed to upload image.(File size must be less than 2MB)</span>
+            <span className="text-red-700">
+              Failed to upload image.(File size must be less than 2MB)
+            </span>
           ) : imagePercent > 0 && imagePercent < 100 ? (
             <span className="text-slate-700">Uploading... {imagePercent}%</span>
           ) : imagePercent === 100 ? (
             <span className="text-green-500">Image uploaded successfully.</span>
-          ) : ''}
+          ) : (
+            ""
+          )}
         </p>
 
         <input
@@ -80,6 +116,7 @@ const Profile = () => {
           defaultValue={currentUser.username}
           placeholder="Username"
           className="bg-slate-100 rounded-lg p-3"
+          onChange={handleChange}
         />
         <input
           type="email"
@@ -87,21 +124,25 @@ const Profile = () => {
           id="email"
           placeholder="Email"
           className="bg-slate-100 rounded-lg p-3"
+          onChange={handleChange}
         />
         <input
           type="password"
           id="password"
           placeholder="Password"
           className="bg-slate-100 rounded-lg p-3"
+          onChange={handleChange}
         />
         <button className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80">
-          Update
+         {loading ? "loading..." : "update"}
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <button className="text-red-700 cursor-pointer">Delete account</button>
-        <button className="text-red-700 cursor-pointer">Sign out</button>
+        <span className="text-red-500 cursor-pointer">Sign out</span>
+        <span className="text-red-500 cursor-pointer">Delete account</span>
       </div>
+          <p className="text-red-700 mt-5">{error && 'Something went wrong'}</p>
+          <p className="text-green-500 mt-5">{updateSuccess && 'User is updated successfully'}</p>
     </div>
   );
 };
