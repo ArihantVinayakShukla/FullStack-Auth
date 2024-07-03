@@ -70,7 +70,7 @@ const Profile = () => {
     updateUserStart();
     try {
       const res = await axios.post(
-        `http://localhost:3000/api/user/update/${currentUser._id}`,
+        `/api/user/update/${currentUser._id}`,
         formData,
         { withCredentials: true }
       );
@@ -90,7 +90,7 @@ const Profile = () => {
   const handleDeleteAccount = async () => {
     try {
       deleteUserStart();
-      const res = await axios.delete(`http://localhost:3000/api/user/delete/${currentUser._id}`, {withCredentials: true});
+      const res = await axios.delete(`/api/user/delete/${currentUser._id}`, {withCredentials: true});
       const data = res.data;
       if(data.success === false) {
         deleteUserFailure("Failed to delete user");
@@ -106,7 +106,7 @@ const Profile = () => {
 
   const handleSignOut = async () => {
     try{
-      await axios.get("http://localhost:3000/api/auth/signout", {withCredentials: true});
+      await axios.get("/api/auth/signout", {withCredentials: true});
       signOut();
     } catch (error) {
       console.error(error);

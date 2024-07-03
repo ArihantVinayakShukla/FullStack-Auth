@@ -23,7 +23,7 @@ const SignUp = () => {
       setLoading(true);
       setError(false);
       const res = await axios.post(
-        "http://localhost:3000/api/auth/signup",
+        "/api/auth/signup",
         formData
       );
       const data = res.data; // Simplified
